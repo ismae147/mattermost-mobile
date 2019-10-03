@@ -113,6 +113,7 @@ jobs:
     working_directory: ~/mattermost-mobile
     docker:
       - image: circleci/android:api-27-node
+    resource_class: large
     environment:
       APP_NAME: "Mattermost"
       BETA_BUILD: false
@@ -121,8 +122,8 @@ jobs:
       SENTRY_ENABLED: false
       SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
       TELEMETRY_ENABLED: true
-      GRADLE_OPTS: '-Xmx3g -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process'
-      _JAVA_OPTIONS: '-Xms1048m -Xmx2048m'
+#      GRADLE_OPTS: '-Xmx3g -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process'
+#      _JAVA_OPTIONS: '-Xms1048m -Xmx2048m'
       NODE_OPTIONS: --max_old_space_size=12000
       NODE_ENV: production
       BABEL_ENV: production

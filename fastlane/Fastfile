@@ -610,8 +610,7 @@ platform :android do
     gradle(
         task: 'app:assemble',
         build_type: config_mode,
-        project_dir: 'android/',
-        flags: '--max-workers=2'
+        project_dir: 'android/'
     )
   end
 
