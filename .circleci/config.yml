@@ -23,7 +23,7 @@ commands:
       - save_cache:
           key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
           paths:
-            - fastlanevendor/bundle
+            - fastlane/vendor/bundle
 
   android-gradle-dependencies:
     description: "Get Gradle dependencies for Android buils"
