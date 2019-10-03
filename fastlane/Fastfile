@@ -490,7 +490,7 @@ platform :android do
         task: 'assemble',
         build_type: 'Unsigned',
         project_dir: 'android/',
-        flags: '--max-workers=1'
+        flags: '--max-workers=2'
     )
   end
 
@@ -611,7 +611,7 @@ platform :android do
         task: 'app:assemble',
         build_type: config_mode,
         project_dir: 'android/',
-        flags: '--max-workers=1'
+        flags: '--max-workers=2'
     )
   end
 

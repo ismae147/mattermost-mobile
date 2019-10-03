@@ -15,12 +15,14 @@ commands:
     description: "Get Fastlane dependencies for Android builds"
     steps:
       - restore_cache:
+          name: Restore Fastlane cache
           key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
       - run:
           working_directory: fastlane
-          name: Fastlane & dependencies
+          name: Download Fastlane dependencies
           command: bundle install --path vendor/bundle
       - save_cache:
+          name: Save Fastlane cache
           key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
           paths:
             - fastlane/vendor/bundle
@@ -29,12 +31,14 @@ commands:
     description: "Get Gradle dependencies for Android buils"
     steps:
       - restore_cache:
+          name: Restore Gradle cache
           key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
       - run:
           working_directory: android
-          name: Download Dependencies
+          name: Download Gradle dependencies
           command: ./gradlew dependencies
       - save_cache:
+          name: Save Gradle cache
           paths:
             - ~/.gradle
           key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
@@ -59,10 +63,6 @@ commands:
           working_directory: fastlane
           name: Run fastlane to build android
           no_output_timeout: 30m
-          environment:
-            NODE_OPTIONS: --max_old_space_size=12000
-            NODE_ENV: production
-            BABEL_ENV: production
           command: bundle exec fastlane android build || exit 1
 
 
@@ -76,20 +76,24 @@ jobs:
       - checkout:
           path: ~/mattermost-mobile
       - restore_cache:
+          name: Restore npm cache
           key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
           command: npm install
       - save_cache:
+          name: Save npm cache
           key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
           paths:
             - node_modules
       - restore_cache:
+          name: Restore assets cache
           key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
       - run:
           name: Generate assets
           command: make dist/assets
       - save_cache:
+          name: Save assets cache
           key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
           paths:
             - dist
@@ -118,6 +122,10 @@ jobs:
       SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
       TELEMETRY_ENABLED: true
       GRADLE_OPTS: '-Xmx3g -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process'
+      _JAVA_OPTIONS: '-Xms1048m -Xmx2048m'
+      NODE_OPTIONS: --max_old_space_size=12000
+      NODE_ENV: production
+      BABEL_ENV: production
     steps:
       - build-android
 
