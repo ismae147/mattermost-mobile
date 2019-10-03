@@ -19,11 +19,11 @@ commands:
       - run:
           working_directory: fastlane
           name: Fastlane & dependencies
-          command: bundle install
+          command: bundle install --path vendor/bundle
       - save_cache:
           key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
           paths:
-            - vendor/bundle
+            - fastlanevendor/bundle
 
   android-gradle-dependencies:
     description: "Get Gradle dependencies for Android buils"
@@ -60,6 +60,7 @@ commands:
           name: Run fastlane to build android
           no_output_timeout: 30m
           environment:
+            NODE_OPTIONS: --max_old_space_size=12000
             NODE_ENV: production
             BABEL_ENV: production
           command: bundle exec fastlane android build || exit 1
