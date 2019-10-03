@@ -40,6 +40,7 @@ const config = {
             };
         },
     },
+    maxWorkers: process.env.CIRCLECI === 'true' ? 2 : null, //eslint-disable-line no-process-env
 };
 
 module.exports = config;

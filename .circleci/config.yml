@@ -117,8 +117,7 @@ jobs:
       SENTRY_ENABLED: false
       SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
       TELEMETRY_ENABLED: true
-#      JAVA_OPTS: '-Xms512m -Xmx2g'
-#      GRADLE_OPTS: '-Xmx3g -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process '
+      GRADLE_OPTS: '-Xmx3g -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process'
     steps:
       - build-android
 
