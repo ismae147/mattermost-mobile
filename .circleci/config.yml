@@ -15,13 +15,13 @@ commands:
     description: "Get Fastlane dependencies for Android builds"
     steps:
       - restore_cache:
-          key: v1-gems-android-{{ checksum "Gemfile.lock" }}-{{ arch }}
+          key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
       - run:
           working_directory: fastlane
           name: Fastlane & dependencies
           command: bundle install
       - save_cache:
-          key: v1-gems-android-{{ checksum "Gemfile.lock" }}-{{ arch }}
+          key: v1-gems-android-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
 
@@ -58,10 +58,11 @@ commands:
       - run:
           working_directory: fastlane
           name: Run fastlane to build android
+          no_output_timeout: 30m
           environment:
             NODE_ENV: production
             BABEL_ENV: production
-          command: fastlane build android || exit 1
+          command: bundle exec fastlane android build || exit 1
 
 
 
