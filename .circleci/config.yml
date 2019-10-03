@@ -1,5 +1,69 @@
 version: 2.1
 
+commands:
+  checkout-private:
+    description: "Checkout the private repo with build env vars"
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "0e:7c:ef:39:09:aa:94:c9:82:4f:3d:6f:ae:c9:3b:33"
+      - run:
+          name: Clone the mobile private repo
+          command: git clone git@github.com:mattermost/mattermost-mobile-private.git ~/mattermost-mobile-private
+
+  android-gem-dependencies:
+    description: "Get Fastlane dependencies for Android builds"
+    steps:
+      - restore_cache:
+          key: v1-gems-android-{{ checksum "Gemfile.lock" }}-{{ arch }}
+      - run:
+          working_directory: fastlane
+          name: Fastlane & dependencies
+          command: bundle install
+      - save_cache:
+          key: v1-gems-android-{{ checksum "Gemfile.lock" }}-{{ arch }}
+          paths:
+            - vendor/bundle
+
+  android-gradle-dependencies:
+    description: "Get Gradle dependencies for Android buils"
+    steps:
+      - restore_cache:
+          key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
+      - run:
+          working_directory: android
+          name: Download Dependencies
+          command: ./gradlew dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
+
+  build-android:
+    description: "Builds the android app with variables"
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - checkout-private
+      - attach_workspace:
+          at: ~/mattermost-mobile
+      - android-gem-dependencies
+      - android-gradle-dependencies
+      - run:
+          name: Append Keystore to build Android
+          command: |
+            echo ${STORE_FILE} | tee -a android/gradle.properties > /dev/null
+            echo ${STORE_ALIAS} | tee -a android/gradle.properties > /dev/null
+            echo ${STORE_PASSWORD} | tee -a android/gradle.properties > /dev/null
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build android
+          environment:
+            NODE_ENV: production
+            BABEL_ENV: production
+          command: fastlane build android || exit 1
+
+
 
 jobs:
   test:
@@ -7,17 +71,63 @@ jobs:
     docker:
       - image: circleci/node:10
     steps:
-      - checkout
-      - run: |
-          echo assets/base/config.json
-          cat assets/base/config.json
-          # Avoid installing pods
-          touch .podinstall
-          # Run tests
-          make test || exit 1
+      - checkout:
+          path: ~/mattermost-mobile
+      - restore_cache:
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+      - run:
+          name: Getting JavaScript dependencies
+          command: npm install
+      - save_cache:
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+          paths:
+            - node_modules
+      - restore_cache:
+          key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
+      - run:
+          name: Generate assets
+          command: make dist/assets
+      - save_cache:
+          key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
+          paths:
+            - dist
+      - run:
+          name: Check styles
+          command: npm run check
+      - run:
+          name: Running Tests
+          command: npm test
+      - persist_to_workspace:
+          root: ~/mattermost-mobile
+          paths:
+            - node_modules
+            - dist
+
+  android-release:
+    working_directory: ~/mattermost-mobile
+    docker:
+      - image: circleci/android:api-27-node
+    environment:
+      APP_NAME: "Mattermost"
+      BETA_BUILD: false
+      REPLACE_ASSETS: true
+      MAIN_APP_IDENTIFIER: "com.mattermost.rn"
+      SENTRY_ENABLED: false
+      SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
+      TELEMETRY_ENABLED: true
+#      JAVA_OPTS: '-Xms512m -Xmx2g'
+#      GRADLE_OPTS: '-Xmx3g -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process '
+    steps:
+      - build-android
 
 workflows:
   version: 2
-  pr-test:
+  test-and-build:
     jobs:
       - test
+      - android-release:
+          requires:
+            - test
+          filters:
+            branches:
+              only: ci
