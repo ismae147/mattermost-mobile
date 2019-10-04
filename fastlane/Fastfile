@@ -489,8 +489,7 @@ platform :android do
     gradle(
         task: 'assemble',
         build_type: 'Unsigned',
-        project_dir: 'android/',
-        flags: '--max-workers=2'
+        project_dir: 'android/'
     )
   end
 

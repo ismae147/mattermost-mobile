@@ -1,5 +1,16 @@
 version: 2.1
 
+executors:
+  android:
+    environment:
+      NODE_OPTIONS: --max_old_space_size=12000
+      NODE_ENV: production
+      BABEL_ENV: production
+    docker:
+      - image: circleci/android:api-27-node
+    working_directory: ~/mattermost-mobile
+    resource_class: large
+
 commands:
   checkout-private:
     description: "Checkout the private repo with build env vars"
@@ -66,8 +77,6 @@ commands:
           no_output_timeout: 30m
           command: bundle exec fastlane android build || exit 1
 
-
-
 jobs:
   test:
     working_directory: ~/mattermost-mobile
@@ -111,10 +120,7 @@ jobs:
             - dist
 
   android-release:
-    working_directory: ~/mattermost-mobile
-    docker:
-      - image: circleci/android:api-27-node
-    resource_class: large
+    executor: android
     environment:
       APP_NAME: "Mattermost"
       BETA_BUILD: false
@@ -122,12 +128,7 @@ jobs:
       MAIN_APP_IDENTIFIER: "com.mattermost.rn"
       SENTRY_ENABLED: false
       SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
-      TELEMETRY_ENABLED: true
-#      GRADLE_OPTS: '-Xmx3g -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx2g -XX:+HeapDumpOnOutOfMemoryError" -Dkotlin.compiler.execution.strategy=in-process'
-#      _JAVA_OPTIONS: '-Xms1048m -Xmx2048m'
-      NODE_OPTIONS: --max_old_space_size=12000
-      NODE_ENV: production
-      BABEL_ENV: production
+      TELEMETRY_ENABLED: false
     steps:
       - build-android
 
