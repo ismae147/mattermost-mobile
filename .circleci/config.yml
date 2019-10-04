@@ -132,12 +132,32 @@ jobs:
     steps:
       - build-android
 
+  android-beta:
+    executor: android
+    environment:
+      APP_NAME: "Mattermost Beta"
+      BETA_BUILD: true
+      REPLACE_ASSETS: true
+      MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
+      SENTRY_ENABLED: false
+      SEGMENT_API_KEY: ${SEGMENT_API_KEY_BETA}
+      TELEMETRY_ENABLED: true
+    steps:
+      - build-android
+
 workflows:
   version: 2
   test-and-build:
     jobs:
       - test
       - android-release:
+          context: mattermost-mobile
+          requires:
+            - test
+          filters:
+            branches:
+              only: ci
+      - android-beta:
           context: mattermost-mobile
           requires:
             - test
