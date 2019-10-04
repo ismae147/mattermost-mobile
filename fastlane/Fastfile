@@ -292,6 +292,13 @@ platform :ios do
     end
   end
 
+  desc 'Get iOS adhoc profiles'
+  lane :adhoc do
+    if ENV['MATCH_TYPE'] != 'adhoc' && !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+      match('adhoc')
+    end
+  end
+
   desc 'Build iOS app'
   lane :build do
     unless configured
