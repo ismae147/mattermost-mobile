@@ -203,7 +203,7 @@ jobs:
       NOTIFICATION_SERVICE_IDENTIFIER: 'com.mattermost.rnbeta.NotificationService'
       IOS_APP_GROUP: 'group.com.mattermost.rnbeta'
       IOS_ICLOUD_CONTAINER: 'iCloud.com.mattermost.rnbeta'
-      IOS_BUILD_EXPORT_METHOD: 'appstore'
+      IOS_BUILD_EXPORT_METHOD: 'app-store'
     steps:
       - build-ios
 
