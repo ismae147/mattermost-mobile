@@ -64,8 +64,24 @@ commands:
             - ~/.gradle
           key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
 
+  ios-gem-dependices:
+    description: "Get Fastlane dependencies for iOS builds"
+      steps:
+        - restore_cache:
+            name: Restore Fastlane cache
+            key: v1-gems-ios-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+        - run:
+            working_directory: fastlane
+            name: Download Fastlane dependencies
+            command: bundle install --path vendor/bundle
+        - save_cache:
+            name: Save Fastlane cache
+            key: v1-gems-ios-{{ checksum "fastlane/Gemfile.lock" }}-{{ arch }}
+            paths:
+              - fastlane/vendor/bundle
+
   build-android:
-    description: "Builds the android app with variables"
+    description: "Builds the android app"
     steps:
       - checkout:
           path: ~/mattermost-mobile
@@ -86,6 +102,31 @@ commands:
           name: Run fastlane to build android
           no_output_timeout: 30m
           command: bundle exec fastlane android build || exit 1
+
+  build-ios:
+    description: "Builds the iOS app"
+    steps:
+      - checkout:
+          path: ~/mattermost-mobile
+      - run:
+          name: Set Ruby version
+          command:  echo "ruby-2.4" > ~/.ruby-version
+      - checkout-private
+      - attach_workspace:
+          at: ~/mattermost-mobile
+      - ios-gem-dependencies
+      - run:
+          name: Append Keystore to build Android
+          command: |
+            cp ~/mattermost-mobile-private/android/${STORE_FILE} android/app/${STORE_FILE}
+            echo MATTERMOST_RELEASE_STORE_FILE=${STORE_FILE} | tee -a android/gradle.properties > /dev/null
+            echo ${STORE_ALIAS} | tee -a android/gradle.properties > /dev/null
+            echo ${STORE_PASSWORD} | tee -a android/gradle.properties > /dev/null
+      - run:
+          working_directory: fastlane
+          name: Run fastlane to build iOS
+          no_output_timeout: 30m
+          command: bundle exec fastlane ios build || exit 1
 
 jobs:
   test:
@@ -134,7 +175,7 @@ jobs:
     environment:
       APP_NAME: "Mattermost Beta"
       BETA_BUILD: true
-      REPLACE_ASSETS: true
+      REPLACE_ASSETS: false
       MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
       SENTRY_ENABLED: false
       SEGMENT_API_KEY: ${SEGMENT_API_KEY_BETA}
@@ -155,6 +196,25 @@ jobs:
     steps:
       - build-android
 
+  ios-beta:
+    executor: ios
+    environment:
+      APP_NAME: "Mattermost Beta"
+      BETA_BUILD: true
+      REPLACE_ASSETS: false
+      MAIN_APP_IDENTIFIER: "com.mattermost.rnbeta"
+      SENTRY_ENABLED: false
+      SEGMENT_API_KEY: ${SEGMENT_API_KEY_BETA}
+      MATCH_TYPE: appstore
+      MATCH_APP_IDENTIFIER: 'com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta'
+      EXTENSION_APP_IDENTIFIER: 'com.mattermost.rnbeta.MattermostShare'
+      NOTIFICATION_SERVICE_IDENTIFIER: 'com.mattermost.rnbeta.NotificationService'
+      IOS_APP_GROUP: 'group.com.mattermost.rnbeta'
+      IOS_ICLOUD_CONTAINER: 'iCloud.com.mattermost.rnbeta'
+      IOS_BUILD_EXPORT_METHOD: 'appstore'
+    steps:
+      - build-android
+
 workflows:
   version: 2
   test-and-build:
@@ -166,8 +226,15 @@ workflows:
             - test
           filters:
             branches:
-              only: ci
+              ignore: ci
       - android-beta:
+          context: mattermost-mobile
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: ci
+      - ios-beta:
           context: mattermost-mobile
           requires:
             - test
