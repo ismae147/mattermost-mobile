@@ -110,7 +110,7 @@ commands:
           path: ~/mattermost-mobile
       - run:
           name: Set Ruby version
-          command:  echo "ruby-2.4" > ~/.ruby-version
+          command:  echo "ruby-2.6.4" > ~/.ruby-version
       - attach_workspace:
           at: ~/mattermost-mobile
       - ios-gem-dependencies
