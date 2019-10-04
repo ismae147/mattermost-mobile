@@ -295,7 +295,7 @@ platform :ios do
   desc 'Get iOS adhoc profiles'
   lane :adhoc do
     if ENV['MATCH_TYPE'] != 'adhoc' && !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
-      match('adhoc')
+      match(type: 'adhoc')
     end
   end
 
