@@ -17,7 +17,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "11.1.0"
+      xcode: "11.0.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
 
@@ -110,7 +110,7 @@ commands:
           path: ~/mattermost-mobile
       - run:
           name: Set Ruby version
-          command:  echo "ruby-2.6.4" > ~/.ruby-version
+          command:  echo "ruby-2.6.3" > ~/.ruby-version
       - attach_workspace:
           at: ~/mattermost-mobile
       - ios-gem-dependencies
