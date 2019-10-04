@@ -88,7 +88,7 @@ commands:
           key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
-          command: npm install
+          command: NODE_ENV=development npm install
       - save_cache:
           name: Save npm cache
           key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
@@ -124,6 +124,7 @@ commands:
     steps:
       - checkout:
           path: ~/mattermost-mobile
+      - npm-dependencies
       - run:
           name: Set Ruby version
           command:  echo "ruby-2.6.3" > ~/.ruby-version
@@ -215,7 +216,6 @@ jobs:
       IOS_ICLOUD_CONTAINER: 'iCloud.com.mattermost.rnbeta'
       IOS_BUILD_EXPORT_METHOD: 'app-store'
     steps:
-      - npm-dependencies
       - build-ios
 
 workflows:
