@@ -77,8 +77,6 @@ after_all do |lane|
       end
     end
   end
-
-  puts "TEST_ENV #{ENV['TEST_ENV']} NODE_ENV #{ENV['NODE_ENV']}"
 end
 
 desc 'Increment version number for both Android and iOS'

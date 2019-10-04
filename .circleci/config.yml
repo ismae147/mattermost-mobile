@@ -11,13 +11,23 @@ executors:
     working_directory: ~/mattermost-mobile
     resource_class: large
 
+  ios:
+    environment:
+      NODE_OPTIONS: --max_old_space_size=12000
+      NODE_ENV: production
+      BABEL_ENV: production
+    macos:
+      xcode: "11.1.0"
+    working_directory: ~/mattermost-mobile
+    shell: /bin/bash --login -o pipefail
+
 commands:
   checkout-private:
     description: "Checkout the private repo with build env vars"
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "e8:39:41:91:a2:d2:02:cc:32:fa:7e:3a:1b:47:2e:2c"
+            - "59:4d:99:5e:1c:6d:30:36:6d:60:76:88:ff:a7:ab:63"
       - run:
           name: Clone the mobile private repo
           command: git clone git@github.com:mattermost/mattermost-mobile-private.git ~/mattermost-mobile-private
@@ -119,19 +129,6 @@ jobs:
             - node_modules
             - dist
 
-  android-release:
-    executor: android
-    environment:
-      APP_NAME: "Mattermost"
-      BETA_BUILD: false
-      REPLACE_ASSETS: true
-      MAIN_APP_IDENTIFIER: "com.mattermost.rn"
-      SENTRY_ENABLED: false
-      SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
-      TELEMETRY_ENABLED: false
-    steps:
-      - build-android
-
   android-beta:
     executor: android
     environment:
@@ -142,6 +139,19 @@ jobs:
       SENTRY_ENABLED: false
       SEGMENT_API_KEY: ${SEGMENT_API_KEY_BETA}
       TELEMETRY_ENABLED: true
+    steps:
+      - build-android
+
+  android-release:
+    executor: android
+    environment:
+      APP_NAME: "Mattermost"
+      BETA_BUILD: false
+      REPLACE_ASSETS: true
+      MAIN_APP_IDENTIFIER: "com.mattermost.rn"
+      SENTRY_ENABLED: false
+      SEGMENT_API_KEY: ${SEGMENT_API_KEY_PROD}
+      TELEMETRY_ENABLED: false
     steps:
       - build-android
 
