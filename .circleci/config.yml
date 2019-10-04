@@ -64,7 +64,7 @@ commands:
             - ~/.gradle
           key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
 
-  ios-gem-dependices:
+  ios-gem-dependencies:
     description: "Get Fastlane dependencies for iOS builds"
     steps:
       - restore_cache:
