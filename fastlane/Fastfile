@@ -295,7 +295,10 @@ platform :ios do
   desc 'Get iOS adhoc profiles'
   lane :adhoc do
     if ENV['MATCH_TYPE'] != 'adhoc' && !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
-      match(type: 'adhoc')
+      match(
+          type: 'adhoc',
+          app_identifier: 'com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta'
+      )
     end
   end
 

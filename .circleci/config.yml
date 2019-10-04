@@ -80,6 +80,22 @@ commands:
           paths:
             - fastlane/vendor/bundle
 
+  npm-dependencies:
+    description: "Get JavaScript dependencies for the job"
+    steps:
+      - restore_cache:
+          name: Restore npm cache
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+      - run:
+          name: Getting JavaScript dependencies
+          command: npm install
+      - save_cache:
+          name: Save npm cache
+          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
+          paths:
+            - node_modules
+
+
   build-android:
     description: "Builds the android app"
     steps:
@@ -132,17 +148,7 @@ jobs:
     steps:
       - checkout:
           path: ~/mattermost-mobile
-      - restore_cache:
-          name: Restore npm cache
-          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
-      - run:
-          name: Getting JavaScript dependencies
-          command: npm install
-      - save_cache:
-          name: Save npm cache
-          key: v1-npm-{{ checksum "package.json" }}-{{ arch }}
-          paths:
-            - node_modules
+      - npm-dependencies
       - restore_cache:
           name: Restore assets cache
           key: v1-assets-{{ checksum "assets/base/config.json" }}-{{ arch }}
@@ -209,6 +215,7 @@ jobs:
       IOS_ICLOUD_CONTAINER: 'iCloud.com.mattermost.rnbeta'
       IOS_BUILD_EXPORT_METHOD: 'app-store'
     steps:
+      - npm-dependencies
       - build-ios
 
 workflows:
